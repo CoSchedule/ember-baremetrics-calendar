@@ -1,27 +1,35 @@
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import JQuery from 'jquery';
 import { equal } from '@ember/object/computed';
-import { bind, run } from '@ember/runloop';
+import { run } from '@ember/runloop';
 import Calendar from 'BaremetricsCalendar';
 
 /**
  * @module
- * @augments @glimmer/Component
+ * @extends Component
+ *
+ * @typedef {Object} Args
+ * @type {Date} [currentDate]
+ * @type {Date} [startDate]
+ * @type {Date} [endDate]
+ * @type {Date} [earliestDate]
+ * @type {Date} [latestDate]
+ * @type {String} [inputFormat]
+ * @type {String} [jumpMonthFormat]
+ * @type {String} [jumpYearFormat]
+ * @type {String} [presetFormat]
+ * @type {String[]} [dayLabels]
+ * @type {Object[]} [presets]
+ * @type {Boolean} [required]
+ * @type {String} [placeholder]
+ * @type {Boolean} [sameDayRange]
+ *
+ * @extends Component<Args>
  */
 export default class BaremetricsCalendarComponent extends Component {
   // -------------------------------------------------------------------------
   // Events
-
-  // didRender() {
-  //   this.set('calendar', this._buildCalendar());
-  // },
-
-  // -------------------------------------------------------------------------
-  // Properties
-
-  callback = bind(this, this._parseCallback);
 
   /**
    * When used as a single date picker, `currentDate` should be the value of the
@@ -29,7 +37,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Date}
    */
-  currentDate = null;
+  get currentDate() {
+    return this.args.currentDate || null;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `startDate` should be
@@ -40,7 +50,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Date}
    */
-  @tracked startDate = undefined;
+    get startDate() {
+      return this.args.startDate || undefined;
+    }
 
   /**
    * When used as a double date picker (i.e. date ranges), `endDate` should be
@@ -48,7 +60,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Date}
    */
-  endDate = null;
+  get endDate() {
+    return this.args.endDate || null;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `earliestDate`
@@ -56,7 +70,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Date}
    */
-  earliestDate = null;
+  get earliestDate() {
+    return this.args.earliestDate || null;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `latestDate`
@@ -64,14 +80,18 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Date}
    */
-  latestDate = null;
+  get latestDate() {
+    return this.args.latestDate || null;
+  }
 
   /**
    * A moment.js format string for how dates should appear in the inputs.
    *
    * @type {String}
    */
-  inputFormat = 'MMMM D, YYYY';
+  get inputFormat() {
+    return this.args.inputFormat || 'MMMM D, YYYY';
+  }
 
   /**
    * A moment.js format string for how month labels should appear when switching
@@ -79,7 +99,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {String}
    */
-  jumpMonthFormat = 'MMMM';
+  get jumpMonthFormat() {
+    return this.args.jumpMonthFormat || 'MMMM';
+  }
 
   /**
    * A moment.js format string for how year labels should appear when switching
@@ -87,7 +109,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {String}
    */
-  jumpYearFormat = 'YYYY';
+  get jumpYearFormat() {
+    return this.args.jumpYearFormat || 'YYYY';
+  }
 
   /**
    * A moment.js format string for how preset labels should appear in the preset
@@ -95,14 +119,18 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {String}
    */
-  presetFormat = null;
+  get presetFormat() {
+    return this.args.presetFormat || null;
+  }
 
   /**
    * An array of strings for the day of week labels, starting with Sunday.
    *
    * @type {String[]}
    */
-  dayLabels = [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ];
+  get dayLabels() {
+    return this.args.dayLabels || [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ];
+  }
 
   /**
    * An array of preset objects to display. If not supplied, it will default to a basic
@@ -118,7 +146,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Object[]}
    */
-  presets = false;
+  get presets() {
+    return this.args.presets || false;
+  }
 
   /**
    * When using in single date mode (see `.type`), use this flag to indicate
@@ -126,7 +156,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Boolean}
    */
-  required = false;
+  get required() {
+    return this.args.required || false;
+  }
 
   /**
    * Placeholder string that appears in single date mode (see `.type`), and only
@@ -134,14 +166,18 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {String}
    */
-  placeholder = null;
+  get placeholder() {
+    return this.args.placeholder || null;
+  }
 
   /**
    * In double mode (see `.type`), is a single day a valid range selection?
    *
    * @type {Boolean}
    */
-  sameDayRange = true;
+  get sameDayRange() {
+    return this.args.sameDayRange || true;
+  }
 
   /**
    * What kind of date picker is this:
@@ -188,8 +224,8 @@ export default class BaremetricsCalendarComponent extends Component {
    */
   @action
   setupCalendar(element) {
-    // let component = this;
-    let config = {
+    let component = this; // we need context from the 3rd party as well as the component
+    const config = {
       element: JQuery(element),
       format: {
         input: this.inputFormat,
@@ -199,7 +235,9 @@ export default class BaremetricsCalendarComponent extends Component {
       days_array: this.dayLabels,
       presets: this.presets,
       placeholder: this.placeholder,
-      callback: this.callback,
+      callback() {
+        component._parseCallback(this)
+      },
     };
 
     if (this.type === 'single') {

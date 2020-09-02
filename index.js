@@ -8,7 +8,12 @@ module.exports = {
     autoImport: {
       alias: {
         'BaremetricsCalendar': 'BaremetricsCalendar/public/js/Calendar.js'
-      }
+      },
+      // webpack: {
+      //   externals: {
+      //     moment: 'moment'
+      //   }
+      // }
     },
   },
 
