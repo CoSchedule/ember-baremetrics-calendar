@@ -9,11 +9,6 @@ module.exports = {
       alias: {
         'BaremetricsCalendar': 'BaremetricsCalendar/public/js/Calendar.js'
       },
-      // webpack: {
-      //   externals: {
-      //     moment: 'moment'
-      //   }
-      // }
     },
   },
 

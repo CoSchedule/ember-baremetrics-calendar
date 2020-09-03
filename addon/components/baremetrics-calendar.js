@@ -268,7 +268,6 @@ export default class BaremetricsCalendarComponent extends Component {
   _parseCallback({ current_date, start_date, end_date }) {
     run(() => {
       let result = start_date ? { startDate: start_date, endDate: end_date } : current_date;
-      // this.sendAction('onchange', result);
       this.args.onchange?.(result)
     });
   }
