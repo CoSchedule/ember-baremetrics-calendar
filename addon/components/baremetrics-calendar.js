@@ -1,36 +1,35 @@
-/* global Calendar */
-
-import Component from '@ember/component';
-import { computed } from '@ember/object';
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
+import JQuery from 'jquery';
 import { equal } from '@ember/object/computed';
 import { run } from '@ember/runloop';
+import Calendar from 'BaremetricsCalendar';
 
 /**
  * @module
- * @augments ember/Component
+ * @extends Component
+ *
+ * @typedef {Object} Args
+ * @type {Date} [currentDate]
+ * @type {Date} [startDate]
+ * @type {Date} [endDate]
+ * @type {Date} [earliestDate]
+ * @type {Date} [latestDate]
+ * @type {String} [inputFormat]
+ * @type {String} [jumpMonthFormat]
+ * @type {String} [jumpYearFormat]
+ * @type {String} [presetFormat]
+ * @type {String[]} [dayLabels]
+ * @type {Object[]} [presets]
+ * @type {Boolean} [required]
+ * @type {String} [placeholder]
+ * @type {Boolean} [sameDayRange]
+ *
+ * @extends Component<Args>
  */
-export default Component.extend({
-
-  // -------------------------------------------------------------------------
-  // Dependencies
-
-  // -------------------------------------------------------------------------
-  // Attributes
-
-  classNames: [
-    'baremetrics-calendar',
-    'daterange'
-  ],
-
+export default class BaremetricsCalendarComponent extends Component {
   // -------------------------------------------------------------------------
   // Events
-
-  didRender() {
-    this.set('calendar', this._buildCalendar());
-  },
-
-  // -------------------------------------------------------------------------
-  // Properties
 
   /**
    * When used as a single date picker, `currentDate` should be the value of the
@@ -38,7 +37,9 @@ export default Component.extend({
    *
    * @type {Date}
    */
-  currentDate: null,
+  get currentDate() {
+    return this.args.currentDate || null;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `startDate` should be
@@ -49,7 +50,9 @@ export default Component.extend({
    *
    * @type {Date}
    */
-  startDate: undefined,
+    get startDate() {
+      return this.args.startDate || undefined;
+    }
 
   /**
    * When used as a double date picker (i.e. date ranges), `endDate` should be
@@ -57,7 +60,9 @@ export default Component.extend({
    *
    * @type {Date}
    */
-  endDate: null,
+  get endDate() {
+    return this.args.endDate || null;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `earliestDate`
@@ -65,7 +70,9 @@ export default Component.extend({
    *
    * @type {Date}
    */
-  earliestDate: null,
+  get earliestDate() {
+    return this.args.earliestDate || null;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `latestDate`
@@ -73,14 +80,18 @@ export default Component.extend({
    *
    * @type {Date}
    */
-  latestDate: null,
+  get latestDate() {
+    return this.args.latestDate || null;
+  }
 
   /**
    * A moment.js format string for how dates should appear in the inputs.
    *
    * @type {String}
    */
-  inputFormat: 'MMMM D, YYYY',
+  get inputFormat() {
+    return this.args.inputFormat || 'MMMM D, YYYY';
+  }
 
   /**
    * A moment.js format string for how month labels should appear when switching
@@ -88,7 +99,9 @@ export default Component.extend({
    *
    * @type {String}
    */
-  jumpMonthFormat: 'MMMM',
+  get jumpMonthFormat() {
+    return this.args.jumpMonthFormat || 'MMMM';
+  }
 
   /**
    * A moment.js format string for how year labels should appear when switching
@@ -96,7 +109,9 @@ export default Component.extend({
    *
    * @type {String}
    */
-  jumpYearFormat: 'YYYY',
+  get jumpYearFormat() {
+    return this.args.jumpYearFormat || 'YYYY';
+  }
 
   /**
    * A moment.js format string for how preset labels should appear in the preset
@@ -104,14 +119,18 @@ export default Component.extend({
    *
    * @type {String}
    */
-  presetFormat: null,
+  get presetFormat() {
+    return this.args.presetFormat || null;
+  }
 
   /**
    * An array of strings for the day of week labels, starting with Sunday.
    *
    * @type {String[]}
    */
-  dayLabels: [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ],
+  get dayLabels() {
+    return this.args.dayLabels || [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ];
+  }
 
   /**
    * An array of preset objects to display. If not supplied, it will default to a basic
@@ -127,7 +146,9 @@ export default Component.extend({
    *
    * @type {Object[]}
    */
-  presets: false,
+  get presets() {
+    return this.args.presets || false;
+  }
 
   /**
    * When using in single date mode (see `.type`), use this flag to indicate
@@ -135,7 +156,9 @@ export default Component.extend({
    *
    * @type {Boolean}
    */
-  required: false,
+  get required() {
+    return this.args.required || false;
+  }
 
   /**
    * Placeholder string that appears in single date mode (see `.type`), and only
@@ -143,14 +166,18 @@ export default Component.extend({
    *
    * @type {String}
    */
-  placeholder: null,
+  get placeholder() {
+    return this.args.placeholder || null;
+  }
 
   /**
    * In double mode (see `.type`), is a single day a valid range selection?
    *
    * @type {Boolean}
    */
-  sameDayRange: true,
+  get sameDayRange() {
+    return this.args.sameDayRange || true;
+  }
 
   /**
    * What kind of date picker is this:
@@ -164,26 +191,26 @@ export default Component.extend({
    *
    * @type {String}
    */
-  type: computed('startDate', function() {
-    if (typeof this.get('startDate') !== 'undefined') {
+  get type() {
+    if (typeof this.startDate !== 'undefined') {
       return 'double';
     }
     return 'single';
-  }),
+  }
 
   /**
    * Convenience computed property for the `type === 'single'`
    *
    * @type {Boolean}
    */
-  isSingle: equal('type', 'single'),
+  @equal('type', 'single') isSingle;
 
   /**
    * Convenience computed property for the `type === 'double'`
    *
    * @type {Boolean}
    */
-  isDouble: equal('type', 'double'),
+  @equal('type', 'double') isDouble;
 
   // -------------------------------------------------------------------------
   // Methods
@@ -191,43 +218,43 @@ export default Component.extend({
   /**
    * Builds the config object that the Calendar constructor expects
    *
-   * @method _buildCalendar
+   * @method setupCalendar
    * @private
    * @return {Object}
    */
-  _buildCalendar() {
-    let component = this;
-    let element = this.$('<div class="baremetrics-calendar">');
-    this.$().empty().append(element);
-    let config = {
-      element: element,
+  @action
+  setupCalendar(element) {
+    let component = this; // we need context from the 3rd party as well as the component
+    const config = {
+      element: JQuery(element),
       format: {
-        input: this.get('inputFormat'),
-        jump_month: this.get('jumpMonthFormat'),
-        jump_year: this.get('jumpYearFormat')
+        input: this.inputFormat,
+        jump_month: this.jumpMonthFormat,
+        jump_year: this.jumpYearFormat
       },
-      days_array: this.get('dayLabels'),
-      presets: this.get('presets'),
-      placeholder: this.get('placeholder'),
+      days_array: this.dayLabels,
+      presets: this.presets,
+      placeholder: this.placeholder,
       callback() {
-        component._parseCallback(this);
-      }
+        component._parseCallback(this)
+      },
     };
-    if (this.get('type') === 'single') {
-      config.current_date = this.get('currentDate');
-      config.required = this.get('required');
-      element.addClass('daterange--single');
+
+    if (this.type === 'single') {
+      config.current_date = this.currentDate;
+      config.required = this.required;
+      element.classList.add('daterange--single');
     } else {
-      config.earliest_date = this.get('earliestDate');
-      config.latest_date = this.get('latestDate');
-      config.start_date = this.get('startDate');
-      config.end_date = this.get('endDate');
-      config.format.preset = this.get('presetFormat');
-      config.same_day_range = this.get('sameDayRange');
-      element.addClass('daterange--double');
+      config.earliest_date = this.earliestDate;
+      config.latest_date = this.latestDate;
+      config.start_date = this.startDate;
+      config.end_date = this.endDate;
+      config.format.preset = this.presetFormat;
+      config.same_day_range = this.sameDayRange;
+      element.classList.add('daterange--double');
     }
     return new Calendar(config);
-  },
+  }
 
   /**
    * Invoked by the Calendar library when a date value changes. Responsible for
@@ -241,8 +268,7 @@ export default Component.extend({
   _parseCallback({ current_date, start_date, end_date }) {
     run(() => {
       let result = start_date ? { startDate: start_date, endDate: end_date } : current_date;
-      this.sendAction('onchange', result);
+      this.args.onchange?.(result)
     });
   }
-
-});
+}

@@ -4,6 +4,17 @@
 
 A wrapper for [the awesome date range picker from Baremetrics](https://github.com/Baremetrics/calendar).
 
+Compatibility
+------------------------------------------------------------------------------
+
+* Ember.js v3.12 or above
+* Ember CLI v2.13 or above
+* Node.js v10 or above
+
+
+Installation
+------------------------------------------------------------------------------
+
 ## Installation
 
 ```sh
