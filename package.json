@@ -1,5 +1,5 @@
 {
-  "name": "ember-baremetrics-calendar",
+  "name": "@coschedule/ember-baremetrics-calendar",
   "version": "1.0.0",
   "description": "The default blueprint for ember-cli addons.",
   "keywords": [
@@ -81,5 +81,9 @@
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": "git://github.com/coschedule/ember-baremetrics-calendar.git"
 }
