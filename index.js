@@ -5,6 +5,10 @@ module.exports = {
 
   options: {
     autoImport: {
+      // The host app ships one global jQuery (with its plugins) as the AMD
+      // `jquery` module, so leave the import to loader.js instead of bundling
+      // a second copy.
+      exclude: ['jquery'],
       alias: {
         BaremetricsCalendar: 'BaremetricsCalendar/public/js/Calendar.js',
       },

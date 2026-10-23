@@ -3,6 +3,7 @@ import { setupRenderingTest } from 'dummy/tests/helpers';
 import { click, find, render, triggerEvent } from '@ember/test-helpers';
 import { hbs } from 'ember-cli-htmlbars';
 import moment from 'moment';
+import $ from 'jquery';
 
 function format(date, pattern = 'MMMM D, YYYY') {
   return moment(date).format(pattern);
@@ -19,6 +20,10 @@ function nextDayAfter(selector) {
 
 module('Integration | Component | baremetrics-calendar', function (hooks) {
   setupRenderingTest(hooks);
+
+  test('it uses the jQuery instance served by loader.js', function (assert) {
+    assert.strictEqual($, window.jQuery);
+  });
 
   test('it renders a single date picker', async function (assert) {
     this.currentDate = moment('2021-03-10', 'YYYY-MM-DD').toDate();

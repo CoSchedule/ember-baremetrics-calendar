@@ -9,6 +9,12 @@ Compatibility
 - Ember CLI v3.28 or above
 - ember-auto-import v2 with webpack 5 in the consuming app
 - `moment` 2.x installed in the consuming app
+- a `jquery` module provided by the consuming app through loader.js, e.g.
+  `app.import('node_modules/jquery/dist/jquery.js')` plus a vendor shim that
+  runs `define('jquery', [], () => ({ default: self.jQuery, __esModule: true }))`
+  (see `ember-cli-build.js` and `vendor/dummy/jquery-shim.js` here). The addon
+  does not depend on jQuery and excludes it from ember-auto-import, so it
+  shares the app's single instance
 - Node.js v20.19 or above
 
 Installation
