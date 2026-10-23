@@ -1,64 +1,126 @@
-/* global moment */
-import { typeOf } from '@ember/utils';
-import { later } from '@ember/runloop';
-import { moduleForComponent, test } from 'ember-qunit';
-import hbs from 'htmlbars-inline-precompile';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'dummy/tests/helpers';
+import { click, find, render, triggerEvent } from '@ember/test-helpers';
+import { hbs } from 'ember-cli-htmlbars';
+import moment from 'moment';
 
-moduleForComponent('baremetrics-calendar', 'Integration | Component | baremetrics calendar', {
-  integration: true
-});
-
-test('it renders a single date', function(assert) {
-  let done = assert.async();
-  assert.expect(3);
-
-  let currentDate = moment();
-  this.set('currentDate', currentDate.toDate());
-  this.on('changed', (newDate) => {
-    assert.equal(typeOf(newDate), 'date', 'changed action returns a Date');
-    assert.notEqual(currentDate.toISOString(), newDate.toISOString(), 'changed action returns updated Date');
-  });
-
-  this.render(hbs`{{baremetrics-calendar currentDate=currentDate onchange="changed"}}`);
-
-  this.$('.dr-date').click();
-  this.$('.dr-current').next('.dr-day').mousedown();
-
-  later(() => {
-    assert.equal(this.$('.dr-input').text().trim(), format(currentDate.add(1, 'day')), 'renders updated date');
-    done();
-  }, 10);
-});
-
-test('it renders a date range', function(assert) {
-  let done = assert.async();
-  assert.expect(5);
-
-  let startDate = moment().subtract(1, 'week');
-  let endDate = moment();
-  this.set('startDate', startDate.toDate());
-  this.set('endDate', endDate.toDate());
-  this.on('changed', (result) => {
-    assert.equal(typeOf(result.startDate), 'date', 'changed action returns a start date');
-    assert.equal(typeOf(result.endDate), 'date', 'changed action returns a end date');
-    assert.notEqual(endDate.toISOString(), result.endDate.toISOString(), 'changed action returns updated startDate');
-  });
-
-  this.render(hbs`{{baremetrics-calendar startDate=startDate endDate=endDate onchange="changed"}}`);
-
-  assert.equal(this.$('.dr-input').text().trim(), `${ format(startDate) }–${ format(endDate) }`, 'renders initially supplied date');
-
-  this.$('.dr-date').click();
-  this.$('.dr-end.dr-current').next('.dr-day').mousedown();
-
-  later(() => {
-    let expectedResult = `${ format(startDate) }–${ format(endDate.add(1, 'day')) }`;
-    assert.equal(this.$('.dr-input').text().trim(), expectedResult, 'renders updated date');
-    done();
-  }, 10);
-});
-
-
-function format(date) {
-  return moment(date).format('MMMM D, YYYY');
+function format(date, pattern = 'MMMM D, YYYY') {
+  return moment(date).format(pattern);
 }
+
+function nextDayAfter(selector) {
+  const current = find(selector);
+  let sibling = current.nextElementSibling;
+  while (sibling && !sibling.classList.contains('dr-day')) {
+    sibling = sibling.nextElementSibling;
+  }
+  return sibling;
+}
+
+module('Integration | Component | baremetrics-calendar', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('it renders a single date picker', async function (assert) {
+    this.currentDate = moment('2021-03-10', 'YYYY-MM-DD').toDate();
+
+    await render(
+      hbs`<BaremetricsCalendar @currentDate={{this.currentDate}} class="extra" />`,
+    );
+
+    assert
+      .dom('.baremetrics-calendar')
+      .hasClass('daterange')
+      .hasClass('daterange--single')
+      .hasClass('extra');
+    assert.dom('.dr-input').hasText(format(this.currentDate));
+  });
+
+  test('it renders a date range with presets', async function (assert) {
+    this.startDate = moment('2021-03-01', 'YYYY-MM-DD').toDate();
+    this.endDate = moment('2021-03-10', 'YYYY-MM-DD').toDate();
+    this.presets = [
+      {
+        label: 'First week of March',
+        start: moment('2021-03-01', 'YYYY-MM-DD'),
+        end: moment('2021-03-07', 'YYYY-MM-DD'),
+      },
+    ];
+
+    await render(hbs`<BaremetricsCalendar
+  @startDate={{this.startDate}}
+  @endDate={{this.endDate}}
+  @presets={{this.presets}}
+/>`);
+
+    assert.dom('.baremetrics-calendar').hasClass('daterange--double');
+    assert
+      .dom('.dr-input')
+      .hasText(`${format(this.startDate)}–${format(this.endDate)}`);
+    assert.dom('.dr-presets').exists();
+    assert.dom('.dr-list-item').includesText('First week of March');
+  });
+
+  test('it uses a custom input format', async function (assert) {
+    this.currentDate = moment('2021-03-10', 'YYYY-MM-DD').toDate();
+
+    await render(
+      hbs`<BaremetricsCalendar @currentDate={{this.currentDate}} @inputFormat="YYYY/MM/DD" />`,
+    );
+
+    assert.dom('.dr-input').hasText('2021/03/10');
+  });
+
+  test('it calls @onchange with the picked date', async function (assert) {
+    const currentDate = moment('2021-03-10', 'YYYY-MM-DD');
+    this.currentDate = currentDate.toDate();
+    this.changed = (newDate) => {
+      assert.step('changed');
+      assert.true(moment.isMoment(newDate), 'onchange receives a moment');
+      assert.strictEqual(
+        format(newDate),
+        format(currentDate.clone().add(1, 'day')),
+      );
+    };
+
+    await render(
+      hbs`<BaremetricsCalendar @currentDate={{this.currentDate}} @onchange={{this.changed}} />`,
+    );
+
+    await click('.dr-date');
+    await triggerEvent(nextDayAfter('.dr-current'), 'mousedown');
+
+    assert.verifySteps(['changed']);
+    assert.dom('.dr-input').hasText(format(currentDate.clone().add(1, 'day')));
+  });
+
+  test('it calls @onchange with the picked range', async function (assert) {
+    const startDate = moment('2021-03-01', 'YYYY-MM-DD');
+    const endDate = moment('2021-03-10', 'YYYY-MM-DD');
+    this.startDate = startDate.toDate();
+    this.endDate = endDate.toDate();
+    this.changed = (result) => {
+      assert.step('changed');
+      assert.true(moment.isMoment(result.startDate));
+      assert.true(moment.isMoment(result.endDate));
+      assert.strictEqual(format(result.startDate), format(startDate));
+      assert.strictEqual(
+        format(result.endDate),
+        format(endDate.clone().add(1, 'day')),
+      );
+    };
+
+    await render(hbs`<BaremetricsCalendar
+  @startDate={{this.startDate}}
+  @endDate={{this.endDate}}
+  @onchange={{this.changed}}
+/>`);
+
+    await click('.dr-date-end');
+    await triggerEvent(nextDayAfter('.dr-end.dr-current'), 'mousedown');
+
+    assert.verifySteps(['changed']);
+    assert
+      .dom('.dr-input')
+      .hasText(`${format(startDate)}–${format(endDate.clone().add(1, 'day'))}`);
+  });
+});
