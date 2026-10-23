@@ -11,3 +11,6 @@
 /pnpm-lock.yaml
 ember-cli-update.json
 *.html
+
+# addon templates render their whitespace, so keep them byte-for-byte
+/addon/**/*.hbs
