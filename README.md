@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/davewasmer/ember-baremetrics-calendar.svg?branch=master)](https://travis-ci.org/davewasmer/ember-baremetrics-calendar)
-
 # ember-baremetrics-calendar
 
 A wrapper for [the awesome date range picker from Baremetrics](https://github.com/Baremetrics/calendar).
@@ -7,10 +5,11 @@ A wrapper for [the awesome date range picker from Baremetrics](https://github.co
 Compatibility
 ------------------------------------------------------------------------------
 
-* Ember.js v3.12 or above
-* Ember CLI v2.13 or above
-* Node.js v10 or above
-
+- Ember.js v3.28 through v7.x (classic `ember-cli-build.js` builds)
+- Ember CLI v3.28 or above
+- ember-auto-import v2 with webpack 5 in the consuming app
+- `moment` 2.x installed in the consuming app
+- Node.js v20.19 or above
 
 Installation
 ------------------------------------------------------------------------------
@@ -18,68 +17,49 @@ Installation
 ## Installation
 
 ```sh
-$ ember install ember-baremetrics-calendar
+$ npm install @coschedule/ember-baremetrics-calendar
 ```
 
 ## Usage
 
-The supplied Ember component supports all the options of the underlying plugin,
-the only difference is that the options are camelCased rather than snake_cased
-like the original plugin.
-
-## Configuration
-
-See the [Baremetrics Calendar docs](https://github.com/Baremetrics/calendar#base-calendar-params)
-for all the available options. The component supports all of them - just
-camelCase the option names, and flatten nested objects.
-
-For example, to set the month jumper label format (`format.jump_month` in the
-underlying plugin), you'd pass in `{{baremetrics-calendar formatJumpMonth='MM'}}`.
+The component exposes the main options of the underlying plugin as camelCased
+arguments: `@currentDate`, `@startDate`, `@endDate`, `@earliestDate`,
+`@latestDate`, `@inputFormat`, `@jumpMonthFormat`, `@jumpYearFormat`,
+`@presetFormat`, `@dayLabels`, `@presets`, `@required`, `@placeholder` and
+`@sameDayRange`. See the
+[Baremetrics Calendar docs](https://github.com/Baremetrics/calendar#base-calendar-params)
+for what each one does.
 
 The calendar component supports two modes: single date entry, and date range
 ("double") entry.
 
 ### Single Dates
 
-If you supply a single date as `currentDate`, the component will automatically
-use the single date entry mode:
+If you pass `@currentDate` without `@startDate`, the component uses the single
+date entry mode:
 
 ```hbs
-{{baremetrics-calendar currentDate=someDate onchange=(action 'updateMyDate')}}
+<BaremetricsCalendar @currentDate={{this.date}} @onchange={{this.updateDate}} />
 ```
 
-When the user selects a different date, the `onchange` action will fire, and
-will pass in the new Date as the first argument:
-
-```js
-actions: {
-  updateMyDate(newDate) {
-    this.set('currentDate', newDate);
-  }
-}
-```
+When the user selects a different date, `@onchange` is called with the new date
+(a moment object).
 
 ### Date Ranges
 
-If you supply both a start and end date (`startDate` and `endDate`), the
-component will automatically use the date range entry mode:
+If you pass `@startDate` (and `@endDate`), the component uses the date range
+entry mode:
 
 ```hbs
-{{baremetrics-calendar startDate=myStartDate endDate=myEndDate onchange=(action 'updateMyDateRange')}}
+<BaremetricsCalendar
+  @startDate={{this.startDate}}
+  @endDate={{this.endDate}}
+  @onchange={{this.updateRange}}
+/>
 ```
 
-When the user selects a different date (start or end, either one), the
-`onchange` action will fire, and will pass in an object with the new start and
-end dates:
-
-```js
-actions: {
-  updateMyDateRange({ startDate, endDate }) {
-    this.set('myStartDate', startDate);
-    this.set('myEndDate', endDate);
-  }
-}
-```
+When the user selects a different start or end date, `@onchange` is called with
+`{ startDate, endDate }` (moment objects).
 
 ## Styling
 
@@ -97,19 +77,19 @@ your `ember-cli-build.js` file:
 
 var app = new EmberApp(defaults, {
   baremetricsCalendar: {
-    includeStyles: false
-  }
+    includeStyles: false,
+  },
 });
 ```
 
 ## Running Tests
 
-* `npm test` (Runs `ember try:testall` to test your addon against multiple Ember versions)
-* `ember test`
-* `ember test --server`
+- `npm test` (lint and tests)
+- `npm run test:ember-compatibility` (runs every `ember try` scenario)
+- `ember test --server`
 
 ## Building
 
-* `ember build`
+- `ember build`
 
 For more information on using ember-cli, visit [http://ember-cli.com/](http://ember-cli.com/).
