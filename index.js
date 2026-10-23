@@ -1,4 +1,3 @@
-/* eslint-env node */
 'use strict';
 
 module.exports = {
@@ -7,7 +6,7 @@ module.exports = {
   options: {
     autoImport: {
       alias: {
-        'BaremetricsCalendar': 'BaremetricsCalendar/public/js/Calendar.js'
+        BaremetricsCalendar: 'BaremetricsCalendar/public/js/Calendar.js',
       },
     },
   },

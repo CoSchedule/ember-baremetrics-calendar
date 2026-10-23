@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import { action } from '@ember/object';
 import JQuery from 'jquery';
-import { equal } from '@ember/object/computed';
 import { run } from '@ember/runloop';
 import Calendar from 'BaremetricsCalendar';
 
@@ -50,9 +49,9 @@ export default class BaremetricsCalendarComponent extends Component {
    *
    * @type {Date}
    */
-    get startDate() {
-      return this.args.startDate || undefined;
-    }
+  get startDate() {
+    return this.args.startDate || undefined;
+  }
 
   /**
    * When used as a double date picker (i.e. date ranges), `endDate` should be
@@ -129,7 +128,7 @@ export default class BaremetricsCalendarComponent extends Component {
    * @type {String[]}
    */
   get dayLabels() {
-    return this.args.dayLabels || [ 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' ];
+    return this.args.dayLabels || ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   }
 
   /**
@@ -199,18 +198,22 @@ export default class BaremetricsCalendarComponent extends Component {
   }
 
   /**
-   * Convenience computed property for the `type === 'single'`
+   * Convenience getter for `type === 'single'`
    *
    * @type {Boolean}
    */
-  @equal('type', 'single') isSingle;
+  get isSingle() {
+    return this.type === 'single';
+  }
 
   /**
-   * Convenience computed property for the `type === 'double'`
+   * Convenience getter for `type === 'double'`
    *
    * @type {Boolean}
    */
-  @equal('type', 'double') isDouble;
+  get isDouble() {
+    return this.type === 'double';
+  }
 
   // -------------------------------------------------------------------------
   // Methods
@@ -226,17 +229,18 @@ export default class BaremetricsCalendarComponent extends Component {
   setupCalendar(element) {
     let component = this; // we need context from the 3rd party as well as the component
     const config = {
+      // eslint-disable-next-line ember/no-jquery -- BaremetricsCalendar only accepts a jQuery element
       element: JQuery(element),
       format: {
         input: this.inputFormat,
         jump_month: this.jumpMonthFormat,
-        jump_year: this.jumpYearFormat
+        jump_year: this.jumpYearFormat,
       },
       days_array: this.dayLabels,
       presets: this.presets,
       placeholder: this.placeholder,
       callback() {
-        component._parseCallback(this)
+        component._parseCallback(this);
       },
     };
 
@@ -266,9 +270,12 @@ export default class BaremetricsCalendarComponent extends Component {
    * @private
    */
   _parseCallback({ current_date, start_date, end_date }) {
+    // eslint-disable-next-line ember/no-runloop -- keeps onchange flushing synchronously as before
     run(() => {
-      let result = start_date ? { startDate: start_date, endDate: end_date } : current_date;
-      this.args.onchange?.(result)
+      let result = start_date
+        ? { startDate: start_date, endDate: end_date }
+        : current_date;
+      this.args.onchange?.(result);
     });
   }
 }
