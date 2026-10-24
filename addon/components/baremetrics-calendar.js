@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import { action } from '@ember/object';
 import JQuery from 'jquery';
 import { run } from '@ember/runloop';
-import Calendar from 'BaremetricsCalendar';
+import Calendar from 'BaremetricsCalendar/public/js/Calendar.js';
 
 /**
  * @module

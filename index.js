@@ -9,9 +9,6 @@ module.exports = {
       // `jquery` module, so leave the import to loader.js instead of bundling
       // a second copy.
       exclude: ['jquery'],
-      alias: {
-        BaremetricsCalendar: 'BaremetricsCalendar/public/js/Calendar.js',
-      },
     },
   },
 
